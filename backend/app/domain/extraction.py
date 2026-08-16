@@ -31,3 +31,22 @@ class PaperExtraction(BaseModel):
     contributions: tuple[EvidenceClaim, ...] = Field(min_length=1, max_length=5)
     limitations: tuple[EvidenceClaim, ...] = Field(max_length=5)
     keywords: tuple[str, ...] = Field(min_length=3, max_length=10)
+
+
+class ExtractionUsage(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    input_tokens: int = Field(ge=0)
+    output_tokens: int = Field(ge=0)
+    total_tokens: int = Field(ge=0)
+
+
+class ExtractionRun(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    extraction: PaperExtraction
+    model: str
+    prompt_version: str
+    provider_response_id: str
+    usage: ExtractionUsage
+    elapsed_ms: float = Field(ge=0)
