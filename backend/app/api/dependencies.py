@@ -2,17 +2,20 @@ from collections.abc import AsyncIterator
 from typing import Annotated
 
 import httpx
-from fastapi import Depends, Request
+from fastapi import Depends, HTTPException, Request, status
+from openai import AsyncOpenAI
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import Settings
 from app.db.repository import ResearchRepository
 from app.db.session import get_session
+from app.extractors.openai import OpenAIPaperExtractor
 from app.providers.arxiv import ArxivProvider
 from app.providers.base import PaperSearchProvider
 from app.providers.openalex import OpenAlexProvider
 from app.rankers.cross_encoder import CrossEncoderRanker
 from app.rankers.tfidf import TfidfRanker
+from app.services.extraction_service import ExtractionService
 from app.services.search_service import SearchService
 
 
@@ -57,3 +60,35 @@ def _semantic_ranker(request: Request, settings: Settings) -> CrossEncoderRanker
         )
         request.app.state.cross_encoder_ranker = ranker
     return ranker
+
+
+async def get_extraction_service(
+    request: Request,
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> AsyncIterator[ExtractionService]:
+    settings: Settings = request.app.state.settings
+    api_key = settings.openai_api_key.get_secret_value() if settings.openai_api_key else None
+    if not api_key:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="OPENAI_API_KEY is required for paper extraction",
+        )
+
+    client = AsyncOpenAI(
+        api_key=api_key,
+        timeout=settings.llm_timeout_seconds,
+        max_retries=settings.openai_max_retries,
+    )
+    try:
+        async with session.begin():
+            yield ExtractionService(
+                extractor=OpenAIPaperExtractor(
+                    client,
+                    model=settings.openai_model,
+                    max_output_tokens=settings.extraction_max_output_tokens,
+                ),
+                store=ResearchRepository(session),
+                max_concurrency=settings.extraction_concurrency,
+            )
+    finally:
+        await client.close()

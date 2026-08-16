@@ -10,6 +10,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    ForeignKeyConstraint,
     Integer,
     String,
     Text,
@@ -94,3 +95,29 @@ class SearchResultModel(Base):
 
     search: Mapped[SearchModel] = relationship(back_populates="results")
     paper: Mapped[PaperModel] = relationship(back_populates="search_results")
+
+
+class PaperExtractionModel(Base):
+    __tablename__ = "paper_extractions"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["search_id", "paper_id"],
+            ["search_results.search_id", "search_results.paper_id"],
+            ondelete="CASCADE",
+        ),
+    )
+
+    search_id: Mapped[UUID] = mapped_column(primary_key=True)
+    paper_id: Mapped[UUID] = mapped_column(primary_key=True)
+    extraction: Mapped[dict[str, Any]] = mapped_column(JSON)
+    model: Mapped[str] = mapped_column(String(100))
+    prompt_version: Mapped[str] = mapped_column(String(100))
+    provider_response_id: Mapped[str] = mapped_column(String(255))
+    input_tokens: Mapped[int] = mapped_column(Integer)
+    output_tokens: Mapped[int] = mapped_column(Integer)
+    total_tokens: Mapped[int] = mapped_column(Integer)
+    elapsed_ms: Mapped[float] = mapped_column(Float)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    modified_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )

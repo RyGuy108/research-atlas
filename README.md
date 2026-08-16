@@ -32,9 +32,30 @@ curl -X POST http://localhost:8000/api/v1/searches \
 
 The ranking module also exposes Recall@K, reciprocal rank, and nDCG evaluation helpers for labeled experiments.
 
+## Phase 4 evidence-backed extraction
+
+Research Atlas can turn ranked paper metadata into structured notes containing the problem, method, reported results, contributions, limitations, and keywords. Each claim carries an exact quote and its source section; the backend rejects a model response when a quote cannot be found in the supplied title or abstract.
+
+The extractor uses the async OpenAI Responses API with Pydantic Structured Outputs. Configure a key before running this paid, opt-in stage:
+
+```bash
+export OPENAI_API_KEY=your_key_here
+export OPENAI_MODEL=gpt-5-mini
+```
+
+After creating a search, extract its five highest-ranked papers:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/searches/SEARCH_ID/extractions \
+  -H 'Content-Type: application/json' \
+  -d '{"limit":5}'
+```
+
+Calls run concurrently with a configurable bound. Successful extractions are persisted with their prompt version, model, provider response ID, token usage, and latency; individual paper failures remain visible in the batch response.
+
 ## Database migrations
 
-PostgreSQL stores searches, canonical papers, provider identifiers, and ranked search results. Apply migrations after configuring `DATABASE_URL`:
+PostgreSQL stores searches, canonical papers, provider identifiers, ranked results, and structured extractions. Apply migrations after configuring `DATABASE_URL`:
 
 ```bash
 make migrate

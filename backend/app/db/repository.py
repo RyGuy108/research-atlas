@@ -5,7 +5,14 @@ from sqlalchemy import Select, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.db.models import PaperModel, PaperSourceModel, SearchModel, SearchResultModel
+from app.db.models import (
+    PaperExtractionModel,
+    PaperModel,
+    PaperSourceModel,
+    SearchModel,
+    SearchResultModel,
+)
+from app.domain.extraction import ExtractionRun, ExtractionTarget
 from app.domain.paper import Author, Paper, PaperProvider, PaperSource
 from app.domain.search import SearchRequest
 from app.services.paper_normalizer import canonical_paper_key, normalize_paper
@@ -76,6 +83,47 @@ class ResearchRepository:
         )
         result = await self._session.scalars(statement)
         return [_to_domain_paper(model) for model in result]
+
+    async def list_extraction_targets(
+        self,
+        search_id: UUID,
+        *,
+        limit: int,
+    ) -> list[ExtractionTarget]:
+        statement = (
+            select(PaperModel, SearchResultModel.rank)
+            .join(SearchResultModel)
+            .where(SearchResultModel.search_id == search_id)
+            .options(selectinload(PaperModel.sources))
+            .order_by(SearchResultModel.rank)
+            .limit(limit)
+        )
+        rows = (await self._session.execute(statement)).all()
+        return [
+            ExtractionTarget(paper_id=paper.id, rank=rank, paper=_to_domain_paper(paper))
+            for paper, rank in rows
+        ]
+
+    async def save_extraction(
+        self,
+        search_id: UUID,
+        paper_id: UUID,
+        run: ExtractionRun,
+    ) -> None:
+        stored = await self._session.get(PaperExtractionModel, (search_id, paper_id))
+        if stored is None:
+            stored = PaperExtractionModel(search_id=search_id, paper_id=paper_id)
+            self._session.add(stored)
+
+        stored.extraction = run.extraction.model_dump(mode="json")
+        stored.model = run.model
+        stored.prompt_version = run.prompt_version
+        stored.provider_response_id = run.provider_response_id
+        stored.input_tokens = run.usage.input_tokens
+        stored.output_tokens = run.usage.output_tokens
+        stored.total_tokens = run.usage.total_tokens
+        stored.elapsed_ms = run.elapsed_ms
+        await self._session.flush()
 
     async def _find_paper(self, paper: Paper) -> PaperModel | None:
         conditions = [PaperModel.canonical_key == canonical_paper_key(paper)]

@@ -24,6 +24,12 @@ class Settings(BaseSettings):
     api_prefix: str = "/api/v1"
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
     openalex_api_key: SecretStr | None = None
+    openai_api_key: SecretStr | None = None
+    openai_model: str = "gpt-5-mini"
+    openai_max_retries: int = Field(default=2, ge=0, le=5)
+    llm_timeout_seconds: float = Field(default=60.0, gt=0, le=300)
+    extraction_max_output_tokens: int = Field(default=2_500, ge=256, le=10_000)
+    extraction_concurrency: int = Field(default=3, ge=1, le=10)
     arxiv_base_url: str = "https://export.arxiv.org"
     openalex_base_url: str = "https://api.openalex.org"
     provider_timeout_seconds: float = Field(default=30.0, gt=0, le=120)

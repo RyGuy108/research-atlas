@@ -1,6 +1,9 @@
 from enum import StrEnum
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from app.domain.paper import Paper
 
 
 class EvidenceSection(StrEnum):
@@ -50,3 +53,39 @@ class ExtractionRun(BaseModel):
     provider_response_id: str
     usage: ExtractionUsage
     elapsed_ms: float = Field(ge=0)
+
+
+class ExtractionTarget(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    paper_id: UUID
+    rank: int = Field(ge=1)
+    paper: Paper
+
+
+class CompletedExtraction(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    paper_id: UUID
+    rank: int = Field(ge=1)
+    title: str
+    run: ExtractionRun
+
+
+class ExtractionFailure(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    paper_id: UUID
+    rank: int = Field(ge=1)
+    title: str
+    error: str
+
+
+class ExtractionBatch(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    search_id: UUID
+    requested_count: int = Field(ge=0)
+    completed: tuple[CompletedExtraction, ...]
+    failures: tuple[ExtractionFailure, ...]
+    usage: ExtractionUsage
