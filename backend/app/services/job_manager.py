@@ -25,6 +25,16 @@ class PipelineRunner(Protocol):
     ) -> PipelineArtifacts: ...
 
 
+class PipelineJobs(Protocol):
+    async def start(self, request: PipelineJobRequest) -> PipelineJobSnapshot: ...
+
+    async def get(self, job_id: UUID) -> PipelineJobSnapshot: ...
+
+    def subscribe(self, job_id: UUID) -> AsyncIterator[PipelineJobSnapshot]: ...
+
+    async def close(self) -> None: ...
+
+
 class PipelineJobNotFoundError(LookupError):
     """Raised when a caller requests an unknown pipeline job."""
 

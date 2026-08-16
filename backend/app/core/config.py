@@ -45,6 +45,9 @@ class Settings(BaseSettings):
     database_url: str = (
         "postgresql+asyncpg://research_atlas:research_atlas@localhost:5432/research_atlas"
     )
+    redis_url: str | None = None
+    pipeline_job_ttl_seconds: int = Field(default=86_400, ge=300, le=604_800)
+    pipeline_queue_name: str = "research-atlas:pipeline-jobs"
 
 
 @lru_cache
