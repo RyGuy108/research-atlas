@@ -1,27 +1,42 @@
-from fastapi.testclient import TestClient
+import pytest
+from fastapi import FastAPI
+from httpx import ASGITransport, AsyncClient
 
 from app.core.config import AppEnvironment, Settings
 from app.main import create_app
 
 
-def make_client() -> TestClient:
+def make_test_app() -> FastAPI:
     settings = Settings(
         app_name="Test Atlas API",
         app_version="9.9.9",
         app_env=AppEnvironment.TEST,
     )
-    return TestClient(create_app(settings))
+    return create_app(settings)
 
 
-def test_root_describes_the_api() -> None:
-    response = make_client().get("/")
+@pytest.fixture
+def anyio_backend() -> str:
+    return "asyncio"
+
+
+@pytest.mark.anyio
+async def test_root_describes_the_api() -> None:
+    async with AsyncClient(
+        transport=ASGITransport(app=make_test_app()), base_url="http://test"
+    ) as client:
+        response = await client.get("/")
 
     assert response.status_code == 200
     assert response.json() == {"name": "Research Atlas API", "docs": "/docs"}
 
 
-def test_health_reports_application_metadata() -> None:
-    response = make_client().get("/api/v1/health")
+@pytest.mark.anyio
+async def test_health_reports_application_metadata() -> None:
+    async with AsyncClient(
+        transport=ASGITransport(app=make_test_app()), base_url="http://test"
+    ) as client:
+        response = await client.get("/api/v1/health")
 
     assert response.status_code == 200
     assert response.json() == {
@@ -32,12 +47,15 @@ def test_health_reports_application_metadata() -> None:
     }
 
 
-def test_readiness_reports_configured_dependencies() -> None:
-    response = make_client().get("/api/v1/ready")
+@pytest.mark.anyio
+async def test_readiness_reports_configured_dependencies() -> None:
+    async with AsyncClient(
+        transport=ASGITransport(app=make_test_app()), base_url="http://test"
+    ) as client:
+        response = await client.get("/api/v1/ready")
 
     assert response.status_code == 200
     assert response.json() == {
         "status": "ready",
         "checks": {"configuration": "configured"},
     }
-

@@ -4,6 +4,10 @@ Research Atlas is a conference-aware paper discovery and evaluation workspace. I
 
 This first phase establishes the FastAPI and Next.js applications that later pipeline work will build on.
 
+## Phase 1 domain
+
+The backend already defines provider-neutral paper and search models plus an immutable pipeline state machine. External providers, ranking models, and persistence can be added without changing the API's core vocabulary.
+
 ## Repository layout
 
 ```text
