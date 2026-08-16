@@ -1,0 +1,37 @@
+{
+  "meta": {"next_cursor": null},
+  "results": [
+    {
+      "id": "https://openalex.org/W123456789",
+      "doi": "https://doi.org/10.1000/EXAMPLE.1",
+      "title": "Adaptive Retrieval for Small Language Models",
+      "publication_date": "2026-08-01",
+      "abstract_inverted_index": {
+        "We": [0],
+        "study": [1],
+        "adaptive": [2],
+        "retrieval": [3]
+      },
+      "authorships": [
+        {
+          "author": {
+            "display_name": "Ada Researcher",
+            "orcid": "https://orcid.org/0000-0001-2345-6789"
+          }
+        }
+      ],
+      "primary_location": {
+        "landing_page_url": "https://example.org/paper",
+        "pdf_url": "https://example.org/paper.pdf",
+        "source": {
+          "id": "https://openalex.org/S111",
+          "display_name": "International Conference on Learning Representations"
+        }
+      },
+      "topics": [{"display_name": "Retrieval-Augmented Generation"}],
+      "ids": {"arxiv": "https://arxiv.org/abs/2608.00001v2"},
+      "cited_by_count": 14
+    }
+  ]
+}
+

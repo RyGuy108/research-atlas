@@ -135,6 +135,7 @@ def _parse_entry(entry: ElementTree.Element) -> Paper:
         authors=authors,
         categories=categories,
         doi=_optional_text(entry, "arxiv:doi"),
+        arxiv_id=provider_id,
         published_on=_parse_date(_required_text(entry, "atom:published")),
         updated_on=_parse_date(_required_text(entry, "atom:updated")),
         venue=_optional_text(entry, "arxiv:journal_ref"),

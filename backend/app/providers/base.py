@@ -13,3 +13,7 @@ class PaperSearchProvider(Protocol):
 class ProviderResponseError(RuntimeError):
     """Raised when a metadata provider returns an unusable response."""
 
+
+class ProviderConfigurationError(RuntimeError):
+    """Raised when a provider is missing required local configuration."""
+

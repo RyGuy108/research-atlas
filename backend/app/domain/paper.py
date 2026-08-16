@@ -26,6 +26,8 @@ class Paper(BaseModel):
     authors: tuple[Author, ...] = Field(min_length=1)
     categories: tuple[str, ...] = ()
     doi: str | None = None
+    arxiv_id: str | None = None
+    citation_count: int = Field(default=0, ge=0)
     published_on: date
     updated_on: date | None = None
     venue: str | None = Field(default=None, max_length=200)

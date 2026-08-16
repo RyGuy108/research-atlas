@@ -1,7 +1,7 @@
 from enum import StrEnum
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     app_env: AppEnvironment = AppEnvironment.DEVELOPMENT
     api_prefix: str = "/api/v1"
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
+    openalex_api_key: SecretStr | None = None
     database_url: str = (
         "postgresql+asyncpg://research_atlas:research_atlas@localhost:5432/research_atlas"
     )
@@ -32,4 +33,3 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     # Settings are immutable during a process, so loading the environment once is sufficient.
     return Settings()
-
