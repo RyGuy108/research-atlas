@@ -19,12 +19,18 @@ services:
     build: ./backend
     environment:
       APP_ENV: ${APP_ENV:-development}
+      CORS_ORIGINS: ${CORS_ORIGINS:-["http://localhost:3000"]}
       DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://research_atlas:research_atlas@database:5432/research_atlas}
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:
       database:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   frontend:
     build:
@@ -36,7 +42,8 @@ services:
     ports:
       - "${WEB_PORT:-3000}:3000"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
 volumes:
   postgres_data:
