@@ -6,7 +6,7 @@ from datetime import date
 import httpx
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from app.domain.paper import Author, Paper, PaperProvider
+from app.domain.paper import Author, Paper, PaperProvider, PaperSource
 from app.domain.search import SearchRequest
 from app.providers.base import ProviderConfigurationError, ProviderResponseError
 
@@ -177,8 +177,12 @@ def _to_paper(work: _Work) -> Paper:
         raise ProviderResponseError(f"OpenAlex work {work.id} has no authors")
 
     return Paper(
-        provider=PaperProvider.OPENALEX,
-        provider_id=work.id.rsplit("/", 1)[-1],
+        sources=(
+            PaperSource(
+                provider=PaperProvider.OPENALEX,
+                identifier=work.id.rsplit("/", 1)[-1],
+            ),
+        ),
         title=" ".join(work.title.split()),
         abstract=abstract,
         authors=tuple(

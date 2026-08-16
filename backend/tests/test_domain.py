@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 from pydantic import ValidationError
 
-from app.domain.paper import Author, Paper, PaperProvider
+from app.domain.paper import Author, Paper, PaperProvider, PaperSource
 from app.domain.pipeline import (
     PIPELINE_STAGES,
     PipelineStage,
@@ -38,8 +38,7 @@ def test_search_request_rejects_duplicate_strategies() -> None:
 def test_paper_requires_at_least_one_author() -> None:
     with pytest.raises(ValidationError):
         Paper(
-            provider=PaperProvider.ARXIV,
-            provider_id="2608.00001",
+            sources=(PaperSource(provider=PaperProvider.ARXIV, identifier="2608.00001"),),
             title="A useful paper",
             abstract="A useful abstract.",
             authors=(),
@@ -50,8 +49,7 @@ def test_paper_requires_at_least_one_author() -> None:
 
 def test_paper_is_immutable() -> None:
     paper = Paper(
-        provider=PaperProvider.ARXIV,
-        provider_id="2608.00001",
+        sources=(PaperSource(provider=PaperProvider.ARXIV, identifier="2608.00001"),),
         title="A useful paper",
         abstract="A useful abstract.",
         authors=(Author(name="Ada Researcher"),),
@@ -86,4 +84,3 @@ def test_pipeline_failure_preserves_completed_work() -> None:
     assert failed.current_stage is None
     assert failed.completed_stages == (PipelineStage.DISCOVERY,)
     assert failed.error == "provider timed out"
-

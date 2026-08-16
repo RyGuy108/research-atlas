@@ -20,8 +20,8 @@ def anyio_backend() -> str:
 def test_parse_arxiv_feed_maps_atom_metadata() -> None:
     paper = parse_arxiv_feed(FIXTURE.read_text())[0]
 
-    assert paper.provider == PaperProvider.ARXIV
-    assert paper.provider_id == "2608.00001"
+    assert paper.sources[0].provider == PaperProvider.ARXIV
+    assert paper.sources[0].identifier == "2608.00001"
     assert paper.title == "Adaptive Retrieval for Small Language Models"
     assert [author.name for author in paper.authors] == ["Ada Researcher", "Grace Scientist"]
     assert paper.categories == ("cs.CL", "cs.IR")
@@ -97,4 +97,3 @@ async def test_search_retries_temporary_provider_errors() -> None:
 def test_parse_arxiv_feed_rejects_invalid_xml() -> None:
     with pytest.raises(ProviderResponseError, match="invalid Atom XML"):
         parse_arxiv_feed("not xml")
-

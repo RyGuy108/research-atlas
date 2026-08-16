@@ -64,8 +64,8 @@ async def test_search_resolves_venue_and_maps_work() -> None:
         )
 
     paper = papers[0]
-    assert paper.provider == PaperProvider.OPENALEX
-    assert paper.provider_id == "W123456789"
+    assert paper.sources[0].provider == PaperProvider.OPENALEX
+    assert paper.sources[0].identifier == "W123456789"
     assert paper.abstract == "We study adaptive retrieval"
     assert paper.doi == "10.1000/example.1"
     assert paper.arxiv_id == "2608.00001"
@@ -94,4 +94,3 @@ async def test_search_returns_empty_when_venue_cannot_be_resolved() -> None:
         )
 
     assert papers == []
-

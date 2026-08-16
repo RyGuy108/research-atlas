@@ -6,7 +6,7 @@ from xml.etree import ElementTree
 
 import httpx
 
-from app.domain.paper import Author, Paper, PaperProvider
+from app.domain.paper import Author, Paper, PaperProvider, PaperSource
 from app.domain.search import SearchRequest
 from app.providers.base import ProviderResponseError
 
@@ -128,8 +128,7 @@ def _parse_entry(entry: ElementTree.Element) -> Paper:
     )
 
     return Paper(
-        provider=PaperProvider.ARXIV,
-        provider_id=provider_id,
+        sources=(PaperSource(provider=PaperProvider.ARXIV, identifier=provider_id),),
         title=_normalize_space(_required_text(entry, "atom:title")),
         abstract=_normalize_space(_required_text(entry, "atom:summary")),
         authors=authors,

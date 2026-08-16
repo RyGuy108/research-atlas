@@ -1,7 +1,8 @@
 from datetime import date
 from enum import StrEnum
+from typing import Self
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
 
 
 class PaperProvider(StrEnum):
@@ -16,11 +17,17 @@ class Author(BaseModel):
     orcid: str | None = None
 
 
-class Paper(BaseModel):
+class PaperSource(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     provider: PaperProvider
-    provider_id: str = Field(min_length=1, max_length=100)
+    identifier: str = Field(min_length=1, max_length=100)
+
+
+class Paper(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    sources: tuple[PaperSource, ...] = Field(min_length=1)
     title: str = Field(min_length=1, max_length=500)
     abstract: str = Field(min_length=1)
     authors: tuple[Author, ...] = Field(min_length=1)
@@ -33,3 +40,10 @@ class Paper(BaseModel):
     venue: str | None = Field(default=None, max_length=200)
     landing_page_url: HttpUrl
     pdf_url: HttpUrl | None = None
+
+    @model_validator(mode="after")
+    def require_unique_providers(self) -> Self:
+        providers = [source.provider for source in self.sources]
+        if len(providers) != len(set(providers)):
+            raise ValueError("a paper can only have one identifier per provider")
+        return self
