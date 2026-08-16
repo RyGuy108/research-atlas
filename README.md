@@ -2,11 +2,21 @@
 
 Research Atlas is a conference-aware paper discovery and evaluation workspace. I made this in mind to retrieve academic papers, compare ranking strategies, and turn a field of your choice into an interactive map.
 
-## Phase 3 ranking pipeline
+## Phase 1 — Project foundation
 
-Every search queries the configured metadata providers concurrently, normalizes their records, and uses TF-IDF cosine similarity to produce a cheap candidate shortlist. When the ML extra is enabled, `cross-encoder/ms-marco-MiniLM-L6-v2` reranks those candidates by reading the topic and paper text together. The response reports provider counts, deduplication totals, latency, and fallback warnings.
+Established a Dockerized monorepo with a FastAPI backend and Next.js frontend. Added typed configuration, health/readiness endpoints, provider-neutral paper models, and an immutable state machine for tracking pipeline execution.
 
-Run the baseline search pipeline with the normal installation. To enable the PyTorch-backed cross-encoder locally:
+## Phase 2 — Multi-source discovery and persistence
+
+Implemented async integrations with arXiv and OpenAlex for journal, preprint, and conference-paper discovery. Results are normalized into a shared schema, deduplicated across DOI, arXiv, and provider identifiers, and persisted in PostgreSQL using SQLAlchemy and Alembic.
+
+## Phase 3 — Retrieval and semantic reranking
+
+Metadata providers are queried concurrently before TF-IDF cosine similarity creates a fast candidate shortlist. An optional PyTorch-backed cross-encoder/ms-marco-MiniLM-L6-v2 model then reranks candidates by jointly evaluating the research topic and paper text.
+
+Search responses include provider counts, deduplication totals, latency, ranking diagnostics, and fallback warnings. The ranking package also supports Recall@K, mean reciprocal rank, and nDCG evaluation.
+
+Enable semantic reranking locally with:
 
 ```bash
 cd backend
@@ -14,75 +24,43 @@ pip install -e '.[ml,dev]'
 export CROSS_ENCODER_ENABLED=true
 ```
 
-For Docker, set both `INSTALL_ML=true` and `CROSS_ENCODER_ENABLED=true` before building. The model downloads on the first semantic search and remains cached in the API process.
+For Docker builds, enable both INSTALL_ML=true and CROSS_ENCODER_ENABLED=true. The model is downloaded during the first semantic search and cached by the API process.
 
-Create a search with:
+## Phase 4 — Evidence-backed extraction
+Ranked papers can be converted into structured research notes covering the problem, method, results, contributions, limitations, and keywords.
 
-```bash
-curl -X POST http://localhost:8000/api/v1/searches \
-  -H 'Content-Type: application/json' \
-  -d '{"topic":"adaptive retrieval for small language models","strategies":["keyword"]}'
-```
+Extraction uses the async OpenAI Responses API with Pydantic Structured Outputs. Every generated claim must include a supporting quotation found in the supplied paper metadata; unsupported evidence causes validation to fail.
 
-The ranking module also exposes Recall@K, reciprocal rank, and nDCG evaluation helpers for labeled experiments.
-
-## Phase 4 evidence-backed extraction
-
-Research Atlas can turn ranked paper metadata into structured notes containing the problem, method, reported results, contributions, limitations, and keywords. Each claim carries an exact quote and its source section; the backend rejects a model response when a quote cannot be found in the supplied title or abstract.
-
-The extractor uses the async OpenAI Responses API with Pydantic Structured Outputs. Configure a key before running this paid, opt-in stage:
+Requests use bounded concurrency, while successful outputs persist their model, prompt version, response ID, token usage, and latency. Individual paper failures remain visible without failing the entire batch.
 
 ```bash
 export OPENAI_API_KEY=your_key_here
 export OPENAI_MODEL=gpt-5-mini
 ```
 
-After creating a search, extract its five highest-ranked papers:
+## Phase 5 — Research landscape synthesis
 
-```bash
-curl -X POST http://localhost:8000/api/v1/searches/SEARCH_ID/extractions \
-  -H 'Content-Type: application/json' \
-  -d '{"limit":5}'
-```
+Research Atlas converts extracted papers into a cross-paper research landscape. A deterministic scikit-learn pipeline selects a cluster count using silhouette score, groups papers with K-means, creates cosine-similarity graph edges, and projects papers into normalized two-dimensional coordinates.
 
-Calls run concurrently with a configurable bound. Successful extractions are persisted with their prompt version, model, provider response ID, token usage, and latency; individual paper failures remain visible in the batch response.
+A structured LLM pass names the clusters and identifies evidence-linked relationships, tensions, and open research questions. Semantic validation rejects irregularities such as the following: unknown papers, invalid cluster evidence, duplicate narratives, and self-referential relationships.
 
-## Phase 5 research landscapes
+## Phase 6 — Interactive research workspace
 
-Once at least two papers have successful extractions, Research Atlas builds a cross-paper landscape in two stages. A deterministic scikit-learn stage chooses a thematic cluster count using silhouette score, assigns papers with K-means, calculates cosine-similarity graph edges, and projects normalized 2D coordinates. A structured LLM pass then names each cluster and identifies evidence-linked relationships, tensions, and open research questions.
+The Next.js and TypeScript interface supports the complete persisted workflow here: topic configuration, multi-provider discovery, ranking diagnostics, evidence extraction, and landscape synthesis.
 
-Build and later retrieve a landscape with:
+Researchers can inspect paper-level evidence and relationships through an interactive semantic graph. Selecting a graph node connects the paper directly to its extracted problem, method, results, and limitations.
 
-```bash
-curl -X POST http://localhost:8000/api/v1/searches/SEARCH_ID/landscape
-curl http://localhost:8000/api/v1/searches/SEARCH_ID/landscape
-```
-
-The semantic validator rejects unknown paper IDs, missing or duplicate cluster narratives, cross-cluster evidence mistakes, and self-referential relationships. The persisted response contains the complete graph and synthesis metadata needed by a future interactive reading map.
-
-## Phase 6 interactive workspace
-
-The Next.js application now drives the complete persisted workflow. A researcher can configure a topic, date range, candidate pool, and ranking strategy; inspect provider and ranking diagnostics; then explicitly opt into LLM extraction and landscape synthesis. Pipeline failures remain attached to the stage that produced them, and token usage stays visible.
-
-The final landscape combines an interactive semantic graph with paper-level evidence, cluster narratives, cross-paper relationships, tensions, and open questions. Select any numbered graph node to trace it back to the structured problem and method extracted from that paper.
-
-For local frontend development, point the typed API client at FastAPI when it is not running on the default port:
+Use NEXT_PUBLIC_API_URL when FastAPI is not available at its default address:
 
 ```bash
 export NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-## Phase 7 live pipeline jobs
+## Phase 7 — Live asynchronous pipeline jobs
 
-The workspace can run discovery, reranking, extraction, and synthesis as one asynchronous job. Enable **Run all stages** before submitting a topic to receive live progress without holding the original HTTP request open. FastAPI returns a job immediately, runs each stage with a fresh database transaction, and publishes immutable snapshots over Server-Sent Events.
+FastAPI immediately returns a job identifier, executes each stage with an isolated database transaction, and streams immutable progress snapshots to the frontend using Server-Sent Events.
 
-```bash
-curl -X POST http://localhost:8000/api/v1/pipeline-jobs \
-  -H 'Content-Type: application/json' \
-  -d '{"search":{"topic":"adaptive retrieval","strategies":["keyword"]},"extraction_limit":5}'
-```
-
-Without `REDIS_URL`, job state stays in the API process for zero-setup development. The Docker stack enables the production path: Redis retains snapshots and Pub/Sub events while a separate worker consumes queued jobs and recovers interrupted queue entries.
+For local development, jobs can run entirely inside the API process. The Docker deployment uses Redis for durable snapshots, Pub/Sub events, and queue coordination, while a separate worker processes jobs and recovers interrupted queue entries.
 
 ## Evaluation and operations
 
