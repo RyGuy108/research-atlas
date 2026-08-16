@@ -23,12 +23,12 @@ async def test_repository_persists_search_and_ranked_papers() -> None:
     factory = async_sessionmaker(engine, expire_on_commit=False)
     async with factory.begin() as session:
         repository = ResearchRepository(session)
-        search = await repository.create_search(SearchRequest(topic="adaptive retrieval"))
+        search_id = await repository.create_search(SearchRequest(topic="adaptive retrieval"))
         papers = [_paper(PaperProvider.ARXIV, "2608.00001", 5)]
-        await repository.attach_results(search.id, papers, scores=[0.91])
+        await repository.attach_results(search_id, papers, scores=[0.91])
 
     async with factory() as session:
-        stored = await ResearchRepository(session).list_search_papers(search.id)
+        stored = await ResearchRepository(session).list_search_papers(search_id)
 
     await engine.dispose()
     assert len(stored) == 1

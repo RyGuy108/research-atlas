@@ -62,10 +62,10 @@ class CrossEncoderRanker:
         if not papers:
             return []
 
-        scorer = self._scorer or SentenceTransformerScorer(
-            self._model_name,
-            device=self._device,
-        )
+        if self._scorer is None:
+            # Keep the downloaded model in memory after its first request.
+            self._scorer = SentenceTransformerScorer(self._model_name, device=self._device)
+        scorer = self._scorer
         pairs = [(query, f"{paper.title}. {paper.abstract}") for paper in papers]
         scores = scorer.predict(pairs, batch_size=self._batch_size)
         if len(scores) != len(papers):

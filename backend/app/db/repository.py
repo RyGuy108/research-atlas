@@ -15,7 +15,7 @@ class ResearchRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def create_search(self, request: SearchRequest) -> SearchModel:
+    async def create_search(self, request: SearchRequest) -> UUID:
         search = SearchModel(
             topic=request.topic,
             filters=request.filters.model_dump(mode="json"),
@@ -23,7 +23,7 @@ class ResearchRepository:
         )
         self._session.add(search)
         await self._session.flush()
-        return search
+        return search.id
 
     async def upsert_paper(self, raw_paper: Paper) -> PaperModel:
         paper = normalize_paper(raw_paper)
@@ -50,11 +50,10 @@ class ResearchRepository:
         search_id: UUID,
         papers: Sequence[Paper],
         scores: Sequence[float | None] | None = None,
-    ) -> list[PaperModel]:
+    ) -> None:
         if scores is not None and len(scores) != len(papers):
             raise ValueError("scores must align with papers")
 
-        stored_papers: list[PaperModel] = []
         for index, paper in enumerate(papers):
             stored = await self.upsert_paper(paper)
             score = scores[index] if scores is not None else None
@@ -64,10 +63,8 @@ class ResearchRepository:
                 self._session.add(result)
             result.rank = index + 1
             result.relevance_score = score
-            stored_papers.append(stored)
 
         await self._session.flush()
-        return stored_papers
 
     async def list_search_papers(self, search_id: UUID) -> list[Paper]:
         statement = (

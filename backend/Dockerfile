@@ -9,7 +9,12 @@ COPY pyproject.toml ./
 COPY app ./app
 COPY alembic.ini ./
 COPY migrations ./migrations
-RUN pip install --no-cache-dir .
+ARG INSTALL_ML=false
+RUN if [ "$INSTALL_ML" = "true" ]; then \
+      pip install --no-cache-dir '.[ml]'; \
+    else \
+      pip install --no-cache-dir .; \
+    fi
 
 EXPOSE 8000
 
