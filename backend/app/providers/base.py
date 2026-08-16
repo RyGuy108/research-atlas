@@ -16,4 +16,3 @@ class ProviderResponseError(RuntimeError):
 
 class ProviderConfigurationError(RuntimeError):
     """Raised when a provider is missing required local configuration."""
-

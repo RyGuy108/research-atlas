@@ -128,9 +128,7 @@ class OpenAlexProvider:
     async def _resolve_source_ids(self, venues: frozenset[str]) -> tuple[str, ...]:
         source_ids: list[str] = []
         for venue in sorted(venues):
-            payload = await self._get_json(
-                "/sources", params={"search": venue, "per-page": 5}
-            )
+            payload = await self._get_json("/sources", params={"search": venue, "per-page": 5})
             page = _validate_payload(_SourcePage, payload, "sources")
             target = _normalized_name(venue)
             match = next(
@@ -145,9 +143,7 @@ class OpenAlexProvider:
                 source_ids.append(match.id.rsplit("/", 1)[-1])
         return tuple(source_ids)
 
-    async def _get_json(
-        self, path: str, *, params: dict[str, str | int]
-    ) -> object:
+    async def _get_json(self, path: str, *, params: dict[str, str | int]) -> object:
         request_params = {**params, "api_key": self._api_key}
         for attempt in range(self._max_attempts):
             try:
@@ -155,10 +151,9 @@ class OpenAlexProvider:
                 response.raise_for_status()
                 return response.json()
             except (httpx.TimeoutException, httpx.TransportError, httpx.HTTPStatusError) as error:
-                retryable = (
-                    not isinstance(error, httpx.HTTPStatusError)
-                    or error.response.status_code in {429, 500, 502, 503, 504}
-                )
+                retryable = not isinstance(
+                    error, httpx.HTTPStatusError
+                ) or error.response.status_code in {429, 500, 502, 503, 504}
                 if not retryable or attempt + 1 == self._max_attempts:
                     raise ProviderResponseError("OpenAlex request failed") from error
                 await self._sleep(float(2**attempt))

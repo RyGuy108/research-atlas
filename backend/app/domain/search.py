@@ -49,4 +49,3 @@ class SearchRequest(BaseModel):
         if len(strategies) != len(set(strategies)):
             raise ValueError("ranking strategies must be unique")
         return strategies
-

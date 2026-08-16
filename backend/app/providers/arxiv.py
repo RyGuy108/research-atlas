@@ -69,10 +69,9 @@ class ArxivProvider:
                 response.raise_for_status()
                 return response
             except (httpx.TimeoutException, httpx.TransportError, httpx.HTTPStatusError) as error:
-                retryable = (
-                    not isinstance(error, httpx.HTTPStatusError)
-                    or error.response.status_code in {429, 500, 502, 503, 504}
-                )
+                retryable = not isinstance(
+                    error, httpx.HTTPStatusError
+                ) or error.response.status_code in {429, 500, 502, 503, 504}
                 if not retryable or attempt + 1 == self._max_attempts:
                     raise ProviderResponseError("arXiv request failed") from error
                 await self._sleep(float(2**attempt))

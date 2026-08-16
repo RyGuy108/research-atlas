@@ -8,6 +8,16 @@ This first phase establishes the FastAPI and Next.js applications that later pip
 
 The backend already defines provider-neutral paper and search models plus an immutable pipeline state machine. External providers, ranking models, and persistence can be added without changing the API's core vocabulary.
 
+## Database migrations
+
+PostgreSQL stores searches, canonical papers, provider identifiers, and ranked search results. Apply migrations after configuring `DATABASE_URL`:
+
+```bash
+make migrate
+```
+
+Docker Compose applies the migration automatically before the API starts.
+
 ## Repository layout
 
 ```text

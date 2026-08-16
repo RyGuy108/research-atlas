@@ -1,2 +1,1 @@
 """External scholarly metadata providers."""
-

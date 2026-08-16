@@ -34,4 +34,3 @@ async def health(request: Request) -> HealthResponse:
 @router.get("/ready", response_model=ReadinessResponse)
 async def ready() -> ReadinessResponse:
     return ReadinessResponse(status="ready", checks={"configuration": "configured"})
-

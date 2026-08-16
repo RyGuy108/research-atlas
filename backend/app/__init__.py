@@ -1,2 +1,1 @@
 """Research Atlas API package."""
-
