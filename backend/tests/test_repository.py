@@ -13,6 +13,17 @@ from app.domain.extraction import (
     ExtractionUsage,
     PaperExtraction,
 )
+from app.domain.landscape import (
+    ClusteredLandscape,
+    ClusterNarrative,
+    LandscapeSynthesis,
+    LandscapeSynthesisRun,
+    OpenResearchQuestion,
+    PaperPosition,
+    ResearchLandscape,
+    SynthesisUsage,
+    ThemeCluster,
+)
 from app.domain.paper import Author, Paper, PaperProvider, PaperSource
 from app.domain.search import SearchRequest
 
@@ -80,11 +91,20 @@ async def test_repository_lists_ranked_targets_and_upserts_extraction() -> None:
         targets = await repository.list_extraction_targets(search_id, limit=5)
         await repository.save_extraction(search_id, targets[0].paper_id, _extraction_run())
         await repository.save_extraction(search_id, targets[0].paper_id, _extraction_run())
+        landscape_papers = await repository.list_landscape_papers(search_id)
+        landscape = _landscape(search_id, targets[0].paper_id)
+        await repository.save_landscape(landscape)
+        await repository.save_landscape(landscape)
+
+    async with factory() as session:
+        stored_landscape = await ResearchRepository(session).get_landscape(search_id)
 
     await engine.dispose()
     assert len(targets) == 1
     assert targets[0].rank == 1
     assert targets[0].paper.title == "Adaptive Retrieval"
+    assert landscape_papers[0].extraction == _extraction_run().extraction
+    assert stored_landscape == landscape
 
 
 def _paper(provider: PaperProvider, identifier: str, citation_count: int) -> Paper:
@@ -120,4 +140,54 @@ def _extraction_run() -> ExtractionRun:
         provider_response_id="response-1",
         usage=ExtractionUsage(input_tokens=10, output_tokens=20, total_tokens=30),
         elapsed_ms=5,
+    )
+
+
+def _landscape(search_id: object, paper_id: object) -> ResearchLandscape:
+    return ResearchLandscape.model_validate(
+        {
+            "search_id": search_id,
+            "clustered": ClusteredLandscape(
+                clusters=(ThemeCluster(cluster_id=0, label="retrieval", paper_ids=(paper_id,)),),
+                positions=(
+                    PaperPosition(
+                        paper_id=paper_id,
+                        cluster_id=0,
+                        membership_score=1,
+                        x=0,
+                        y=0,
+                    ),
+                ),
+                similarity_edges=(),
+            ),
+            "synthesis_run": LandscapeSynthesisRun(
+                synthesis=LandscapeSynthesis(
+                    overview="The landscape studies adaptive retrieval policies and evaluation.",
+                    clusters=(
+                        ClusterNarrative(
+                            cluster_id=0,
+                            name="Adaptive retrieval",
+                            summary="This theme studies when systems should retrieve evidence.",
+                            evidence_paper_ids=(paper_id,),
+                        ),
+                    ),
+                    relationships=(),
+                    tensions=(),
+                    open_questions=(
+                        OpenResearchQuestion(
+                            question="How should adaptive retrieval quality and cost be balanced?",
+                            rationale=(
+                                "The paper motivates evaluating both behavior and efficiency."
+                            ),
+                            evidence_paper_ids=(paper_id,),
+                        ),
+                    ),
+                ),
+                model="test-model",
+                prompt_version="test-v1",
+                provider_response_id="response-landscape",
+                usage=SynthesisUsage(input_tokens=100, output_tokens=50, total_tokens=150),
+                elapsed_ms=20,
+            ),
+        }
     )

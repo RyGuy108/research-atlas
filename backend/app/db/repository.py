@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from uuid import UUID
 
-from sqlalchemy import Select, or_, select
+from sqlalchemy import Select, and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -9,10 +9,19 @@ from app.db.models import (
     PaperExtractionModel,
     PaperModel,
     PaperSourceModel,
+    ResearchLandscapeModel,
     SearchModel,
     SearchResultModel,
 )
-from app.domain.extraction import ExtractionRun, ExtractionTarget
+from app.domain.extraction import ExtractionRun, ExtractionTarget, PaperExtraction
+from app.domain.landscape import (
+    ClusteredLandscape,
+    LandscapePaper,
+    LandscapeSynthesis,
+    LandscapeSynthesisRun,
+    ResearchLandscape,
+    SynthesisUsage,
+)
 from app.domain.paper import Author, Paper, PaperProvider, PaperSource
 from app.domain.search import SearchRequest
 from app.services.paper_normalizer import canonical_paper_key, normalize_paper
@@ -124,6 +133,70 @@ class ResearchRepository:
         stored.total_tokens = run.usage.total_tokens
         stored.elapsed_ms = run.elapsed_ms
         await self._session.flush()
+
+    async def list_landscape_papers(self, search_id: UUID) -> list[LandscapePaper]:
+        statement = (
+            select(PaperExtractionModel, PaperModel.title, SearchResultModel.rank)
+            .join(
+                SearchResultModel,
+                and_(
+                    PaperExtractionModel.search_id == SearchResultModel.search_id,
+                    PaperExtractionModel.paper_id == SearchResultModel.paper_id,
+                ),
+            )
+            .join(PaperModel, PaperExtractionModel.paper_id == PaperModel.id)
+            .where(PaperExtractionModel.search_id == search_id)
+            .order_by(SearchResultModel.rank)
+        )
+        rows = (await self._session.execute(statement)).all()
+        return [
+            LandscapePaper(
+                paper_id=stored.paper_id,
+                rank=rank,
+                title=title,
+                extraction=PaperExtraction.model_validate(stored.extraction),
+            )
+            for stored, title, rank in rows
+        ]
+
+    async def save_landscape(self, landscape: ResearchLandscape) -> None:
+        stored = await self._session.get(ResearchLandscapeModel, landscape.search_id)
+        if stored is None:
+            stored = ResearchLandscapeModel(search_id=landscape.search_id)
+            self._session.add(stored)
+
+        run = landscape.synthesis_run
+        stored.clustered = landscape.clustered.model_dump(mode="json")
+        stored.synthesis = run.synthesis.model_dump(mode="json")
+        stored.model = run.model
+        stored.prompt_version = run.prompt_version
+        stored.provider_response_id = run.provider_response_id
+        stored.input_tokens = run.usage.input_tokens
+        stored.output_tokens = run.usage.output_tokens
+        stored.total_tokens = run.usage.total_tokens
+        stored.elapsed_ms = run.elapsed_ms
+        await self._session.flush()
+
+    async def get_landscape(self, search_id: UUID) -> ResearchLandscape | None:
+        stored = await self._session.get(ResearchLandscapeModel, search_id)
+        if stored is None:
+            return None
+        return ResearchLandscape(
+            search_id=search_id,
+            clustered=ClusteredLandscape.model_validate(stored.clustered),
+            synthesis_run=LandscapeSynthesisRun(
+                synthesis=LandscapeSynthesis.model_validate(stored.synthesis),
+                model=stored.model,
+                prompt_version=stored.prompt_version,
+                provider_response_id=stored.provider_response_id,
+                usage=SynthesisUsage(
+                    input_tokens=stored.input_tokens,
+                    output_tokens=stored.output_tokens,
+                    total_tokens=stored.total_tokens,
+                ),
+                elapsed_ms=stored.elapsed_ms,
+            ),
+        )
 
     async def _find_paper(self, paper: Paper) -> PaperModel | None:
         conditions = [PaperModel.canonical_key == canonical_paper_key(paper)]

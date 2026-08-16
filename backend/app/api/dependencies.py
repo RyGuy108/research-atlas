@@ -16,7 +16,10 @@ from app.providers.openalex import OpenAlexProvider
 from app.rankers.cross_encoder import CrossEncoderRanker
 from app.rankers.tfidf import TfidfRanker
 from app.services.extraction_service import ExtractionService
+from app.services.landscape_clusterer import LandscapeClusterer
+from app.services.landscape_service import LandscapeService
 from app.services.search_service import SearchService
+from app.synthesizers.openai import OpenAILandscapeSynthesizer
 
 
 async def get_search_service(
@@ -92,3 +95,42 @@ async def get_extraction_service(
             )
     finally:
         await client.close()
+
+
+async def get_landscape_service(
+    request: Request,
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> AsyncIterator[LandscapeService]:
+    settings: Settings = request.app.state.settings
+    api_key = settings.openai_api_key.get_secret_value() if settings.openai_api_key else None
+    client = (
+        AsyncOpenAI(
+            api_key=api_key,
+            timeout=settings.llm_timeout_seconds,
+            max_retries=settings.openai_max_retries,
+        )
+        if api_key
+        else None
+    )
+    synthesizer = (
+        OpenAILandscapeSynthesizer(
+            client,
+            model=settings.openai_model,
+            max_output_tokens=settings.landscape_max_output_tokens,
+        )
+        if client
+        else None
+    )
+    try:
+        async with session.begin():
+            yield LandscapeService(
+                store=ResearchRepository(session),
+                clusterer=LandscapeClusterer(
+                    max_clusters=settings.landscape_max_clusters,
+                    similarity_threshold=settings.landscape_similarity_threshold,
+                ),
+                synthesizer=synthesizer,
+            )
+    finally:
+        if client:
+            await client.close()

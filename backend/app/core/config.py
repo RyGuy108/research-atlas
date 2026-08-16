@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     llm_timeout_seconds: float = Field(default=60.0, gt=0, le=300)
     extraction_max_output_tokens: int = Field(default=2_500, ge=256, le=10_000)
     extraction_concurrency: int = Field(default=3, ge=1, le=10)
+    landscape_max_output_tokens: int = Field(default=4_000, ge=512, le=16_000)
+    landscape_max_clusters: int = Field(default=6, ge=2, le=12)
+    landscape_similarity_threshold: float = Field(default=0.2, ge=0, le=1)
     arxiv_base_url: str = "https://export.arxiv.org"
     openalex_base_url: str = "https://api.openalex.org"
     provider_timeout_seconds: float = Field(default=30.0, gt=0, le=120)

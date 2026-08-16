@@ -117,3 +117,11 @@ class LandscapeSynthesisRun(BaseModel):
     provider_response_id: str
     usage: SynthesisUsage
     elapsed_ms: float = Field(ge=0)
+
+
+class ResearchLandscape(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    search_id: UUID
+    clustered: ClusteredLandscape
+    synthesis_run: LandscapeSynthesisRun

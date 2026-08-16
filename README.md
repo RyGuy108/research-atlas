@@ -53,9 +53,22 @@ curl -X POST http://localhost:8000/api/v1/searches/SEARCH_ID/extractions \
 
 Calls run concurrently with a configurable bound. Successful extractions are persisted with their prompt version, model, provider response ID, token usage, and latency; individual paper failures remain visible in the batch response.
 
+## Phase 5 research landscapes
+
+Once at least two papers have successful extractions, Research Atlas builds a cross-paper landscape in two stages. A deterministic scikit-learn stage chooses a thematic cluster count using silhouette score, assigns papers with K-means, calculates cosine-similarity graph edges, and projects normalized 2D coordinates. A structured LLM pass then names each cluster and identifies evidence-linked relationships, tensions, and open research questions.
+
+Build and later retrieve a landscape with:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/searches/SEARCH_ID/landscape
+curl http://localhost:8000/api/v1/searches/SEARCH_ID/landscape
+```
+
+The semantic validator rejects unknown paper IDs, missing or duplicate cluster narratives, cross-cluster evidence mistakes, and self-referential relationships. The persisted response contains the complete graph and synthesis metadata needed by a future interactive reading map.
+
 ## Database migrations
 
-PostgreSQL stores searches, canonical papers, provider identifiers, ranked results, and structured extractions. Apply migrations after configuring `DATABASE_URL`:
+PostgreSQL stores searches, canonical papers, provider identifiers, ranked results, structured extractions, and synthesized landscapes. Apply migrations after configuring `DATABASE_URL`:
 
 ```bash
 make migrate
