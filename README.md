@@ -88,7 +88,13 @@ curl -X POST http://localhost:8000/api/v1/pipeline-jobs \
   -d '{"search":{"topic":"adaptive retrieval","strategies":["keyword"]},"extraction_limit":5}'
 ```
 
-Job state currently lives in the API process, which keeps the local architecture easy to study. The runner and coordinator are separated behind protocols so a later Redis-backed worker can add restart recovery and horizontal scaling without changing the browser contract.
+Without `REDIS_URL`, job state stays in the API process for zero-setup development. The Docker stack enables the production path: Redis retains snapshots and Pub/Sub events while a separate worker consumes queued jobs and recovers interrupted queue entries.
+
+## Evaluation and operations
+
+Human relevance judgments can be recorded against any persisted search. Research Atlas saves each evaluation run and reports Recall@K, reciprocal rank, and nDCG so ranking changes can be compared with repeatable metrics rather than screenshots or intuition.
+
+The production API adds JSON request logs, traceable `X-Request-ID` response headers, Prometheus metrics at `/api/v1/metrics`, and optional `X-API-Key` protection for mutating endpoints. See [DEPLOYMENT.md](DEPLOYMENT.md) for the service topology, secrets, release sequence, and operational checks.
 
 ## Database migrations
 

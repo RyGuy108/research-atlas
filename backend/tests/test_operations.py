@@ -40,3 +40,11 @@ async def test_optional_write_key_protects_mutating_endpoints() -> None:
     assert rejected.status_code == 401
     assert accepted.status_code == 202
     await app.state.pipeline_job_manager.close()
+
+
+def test_blank_deployment_secrets_are_treated_as_unset() -> None:
+    settings = Settings(openai_api_key="", openalex_api_key="  ", write_api_key="")
+
+    assert settings.openai_api_key is None
+    assert settings.openalex_api_key is None
+    assert settings.write_api_key is None

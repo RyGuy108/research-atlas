@@ -1,7 +1,7 @@
 from enum import StrEnum
 from functools import lru_cache
 
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -49,6 +49,13 @@ class Settings(BaseSettings):
     redis_url: str | None = None
     pipeline_job_ttl_seconds: int = Field(default=86_400, ge=300, le=604_800)
     pipeline_queue_name: str = "research-atlas:pipeline-jobs"
+
+    @field_validator("openalex_api_key", "openai_api_key", "write_api_key", mode="before")
+    @classmethod
+    def blank_secret_is_unset(cls, value: object) -> object:
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
 
 
 @lru_cache
