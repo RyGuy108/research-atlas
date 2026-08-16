@@ -15,11 +15,19 @@ from app.providers.base import PaperSearchProvider
 from app.providers.openalex import OpenAlexProvider
 from app.rankers.cross_encoder import CrossEncoderRanker
 from app.rankers.tfidf import TfidfRanker
+from app.services.evaluation_service import EvaluationService
 from app.services.extraction_service import ExtractionService
 from app.services.landscape_clusterer import LandscapeClusterer
 from app.services.landscape_service import LandscapeService
 from app.services.search_service import SearchService
 from app.synthesizers.openai import OpenAILandscapeSynthesizer
+
+
+async def get_evaluation_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> AsyncIterator[EvaluationService]:
+    async with session.begin():
+        yield EvaluationService(ResearchRepository(session))
 
 
 async def get_search_service(

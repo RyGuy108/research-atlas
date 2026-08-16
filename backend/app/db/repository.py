@@ -9,10 +9,12 @@ from app.db.models import (
     PaperExtractionModel,
     PaperModel,
     PaperSourceModel,
+    RankingEvaluationModel,
     ResearchLandscapeModel,
     SearchModel,
     SearchResultModel,
 )
+from app.domain.evaluation import RankingEvaluationRun
 from app.domain.extraction import ExtractionRun, ExtractionTarget, PaperExtraction
 from app.domain.landscape import (
     ClusteredLandscape,
@@ -92,6 +94,29 @@ class ResearchRepository:
         )
         result = await self._session.scalars(statement)
         return [_to_domain_paper(model) for model in result]
+
+    async def list_ranked_paper_ids(self, search_id: UUID) -> list[UUID]:
+        statement = (
+            select(SearchResultModel.paper_id)
+            .where(SearchResultModel.search_id == search_id)
+            .order_by(SearchResultModel.rank)
+        )
+        return list(await self._session.scalars(statement))
+
+    async def save_evaluation(self, evaluation: RankingEvaluationRun) -> None:
+        self._session.add(
+            RankingEvaluationModel(
+                id=evaluation.evaluation_id,
+                search_id=evaluation.search_id,
+                judgments=[judgment.model_dump(mode="json") for judgment in evaluation.judgments],
+                k=evaluation.metrics.k,
+                recall=evaluation.metrics.recall,
+                reciprocal_rank=evaluation.metrics.reciprocal_rank,
+                ndcg=evaluation.metrics.ndcg,
+                created_at=evaluation.created_at,
+            )
+        )
+        await self._session.flush()
 
     async def list_extraction_targets(
         self,

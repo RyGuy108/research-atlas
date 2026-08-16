@@ -142,3 +142,18 @@ class ResearchLandscapeModel(Base):
     modified_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+class RankingEvaluationModel(Base):
+    __tablename__ = "ranking_evaluations"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    search_id: Mapped[UUID] = mapped_column(
+        ForeignKey("searches.id", ondelete="CASCADE"), index=True
+    )
+    judgments: Mapped[list[dict[str, Any]]] = mapped_column(JSON)
+    k: Mapped[int] = mapped_column(Integer)
+    recall: Mapped[float] = mapped_column(Float)
+    reciprocal_rank: Mapped[float] = mapped_column(Float)
+    ndcg: Mapped[float] = mapped_column(Float)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
