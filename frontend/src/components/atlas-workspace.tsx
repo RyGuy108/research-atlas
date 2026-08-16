@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import { ExtractionNotes } from "@/components/extraction-notes";
+import { EvaluationPanel } from "@/components/evaluation-panel";
 import { PaperResults } from "@/components/paper-results";
 import { PipelineProgress, type PipelineStage } from "@/components/pipeline-progress";
 import { ResearchLandscape } from "@/components/research-landscape";
@@ -359,6 +360,10 @@ export function AtlasWorkspace() {
           </section>
 
           {extractions && <ExtractionNotes batch={extractions} />}
+
+          {extractions && extractions.completed.length > 0 && (
+            <EvaluationPanel batch={extractions} />
+          )}
 
           {extractions && (
             <section className="actionPanel" aria-labelledby="map-heading">

@@ -172,6 +172,19 @@ export interface PipelineJobSnapshot {
   updated_at: string;
 }
 
+export interface RankingEvaluationRun {
+  evaluation_id: string;
+  search_id: string;
+  judgments: Array<{ paper_id: string; relevance: number }>;
+  metrics: {
+    k: number;
+    recall: number;
+    reciprocal_rank: number;
+    ndcg: number;
+  };
+  created_at: string;
+}
+
 export interface HealthResponse {
   status: "healthy";
   service: string;
@@ -262,4 +275,15 @@ export function subscribePipelineJob(
   });
 
   return () => events.close();
+}
+
+export function evaluateRanking(
+  searchId: string,
+  judgments: Array<{ paper_id: string; relevance: number }>,
+  k = 10,
+): Promise<RankingEvaluationRun> {
+  return requestJson<RankingEvaluationRun>(`/api/v1/searches/${searchId}/evaluations`, {
+    method: "POST",
+    body: JSON.stringify({ judgments, k }),
+  });
 }

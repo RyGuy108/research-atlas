@@ -207,6 +207,32 @@ select, .searchOptions input { background: transparent; border: 0; color: var(--
 .sectionHeading--compact { margin-bottom: 28px; }
 .usage { color: var(--faint); font-size: 0.7rem; }
 
+.evaluationPanel {
+  border-top: 1px solid var(--line);
+  padding: 76px 0;
+}
+
+.evaluationIntro {
+  display: grid;
+  gap: 48px;
+  grid-template-columns: 0.8fr 1fr;
+  margin-bottom: 30px;
+}
+
+.evaluationIntro h2 { font-size: clamp(2rem, 4vw, 3.3rem); letter-spacing: -0.045em; margin: 0; }
+.evaluationIntro > p { color: var(--muted); line-height: 1.65; margin: 0; }
+.judgmentList { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.judgmentList label { align-items: center; background: var(--surface); border-bottom: 1px solid var(--line); display: flex; gap: 24px; justify-content: space-between; padding: 17px 20px; }
+.judgmentList label:last-child { border-bottom: 0; }
+.judgmentList label > span { font-size: 0.82rem; line-height: 1.4; }
+.judgmentList label strong { color: var(--accent); font-family: "SFMono-Regular", Consolas, monospace; font-size: 0.68rem; margin-right: 8px; }
+.judgmentList select { border: 1px solid var(--line); border-radius: 7px; flex-shrink: 0; padding: 8px 10px; }
+.evaluationFooter { align-items: center; display: flex; gap: 24px; margin-top: 18px; }
+.metricResults { display: grid; gap: 24px; grid-template-columns: repeat(3, auto); margin: 0 0 0 auto; }
+.metricResults dt { color: var(--faint); font-size: 0.62rem; text-transform: uppercase; }
+.metricResults dd { font-family: "SFMono-Regular", Consolas, monospace; margin: 5px 0 0; }
+.evaluationError { color: var(--danger); font-size: 0.78rem; }
+
 .extractionCard { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
 .extractionCard summary { align-items: center; cursor: pointer; display: grid; gap: 16px; grid-template-columns: 42px 1fr auto; list-style: none; padding: 22px 24px; }
 .extractionCard summary::-webkit-details-marker { display: none; }
@@ -457,6 +483,7 @@ footer span { color: var(--ink); font-weight: 700; }
   .diagnostics { width: 100%; }
   .actionPanel { grid-template-columns: 1fr; }
   .landscapeIntro, .mapLayout, .synthesisGrid { grid-template-columns: 1fr; }
+  .evaluationIntro { grid-template-columns: 1fr; }
   .landscapeIntro { gap: 24px; }
   .paperInspector { min-height: 0; }
 }
@@ -480,6 +507,8 @@ footer span { color: var(--ink); font-weight: 700; }
   .mapCanvas { min-height: 390px; }
   .mapHeader { align-items: start; flex-direction: column; gap: 6px; }
   .tensions > div { grid-template-columns: 1fr; }
+  .judgmentList label, .evaluationFooter { align-items: stretch; flex-direction: column; }
+  .metricResults { margin-left: 0; width: 100%; }
   footer { align-items: start; flex-direction: column; }
 }
 

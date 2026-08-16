@@ -92,7 +92,7 @@ Without `REDIS_URL`, job state stays in the API process for zero-setup developme
 
 ## Evaluation and operations
 
-Human relevance judgments can be recorded against any persisted search. Research Atlas saves each evaluation run and reports Recall@K, reciprocal rank, and nDCG so ranking changes can be compared with repeatable metrics rather than screenshots or intuition.
+Human relevance judgments can be recorded from the evidence notebook or API against any persisted search. Research Atlas saves each evaluation run and reports Recall@K, reciprocal rank, and nDCG so ranking changes can be compared with repeatable metrics rather than screenshots or intuition.
 
 The production API adds JSON request logs, traceable `X-Request-ID` response headers, Prometheus metrics at `/api/v1/metrics`, and optional `X-API-Key` protection for mutating endpoints. See [DEPLOYMENT.md](DEPLOYMENT.md) for the service topology, secrets, release sequence, and operational checks.
 

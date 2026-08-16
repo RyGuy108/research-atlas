@@ -43,3 +43,4 @@ Configure these values in the deployment platform rather than committing them:
 - Keep the API and worker on the same application version during releases.
 
 The GitHub Actions workflow validates Python, TypeScript, the production Next.js build, and both container images on every pull request and push to `main`.
+Pushing a version tag such as `v1.0.0` publishes versioned backend and frontend images to GitHub Container Registry for deployment.
