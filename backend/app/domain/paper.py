@@ -24,9 +24,10 @@ class Paper(BaseModel):
     title: str = Field(min_length=1, max_length=500)
     abstract: str = Field(min_length=1)
     authors: tuple[Author, ...] = Field(min_length=1)
+    categories: tuple[str, ...] = ()
+    doi: str | None = None
     published_on: date
     updated_on: date | None = None
     venue: str | None = Field(default=None, max_length=200)
     landing_page_url: HttpUrl
     pdf_url: HttpUrl | None = None
-

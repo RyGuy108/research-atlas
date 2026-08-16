@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:arxiv="http://arxiv.org/schemas/atom">
+  <title>ArXiv Query</title>
+  <entry>
+    <id>https://arxiv.org/abs/2608.00001v2</id>
+    <updated>2026-08-10T12:00:00Z</updated>
+    <published>2026-08-01T09:30:00Z</published>
+    <title>
+      Adaptive Retrieval for Small Language Models
+    </title>
+    <summary>
+      We study when smaller models should retrieve external evidence.
+    </summary>
+    <author><name>Ada Researcher</name></author>
+    <author><name>Grace Scientist</name></author>
+    <category term="cs.CL" />
+    <category term="cs.IR" />
+    <arxiv:doi>10.1000/example.1</arxiv:doi>
+    <arxiv:journal_ref>Proceedings of Example Conference 2026</arxiv:journal_ref>
+    <link href="https://arxiv.org/abs/2608.00001v2" rel="alternate" type="text/html" />
+    <link href="https://arxiv.org/pdf/2608.00001v2" rel="related" type="application/pdf" title="pdf" />
+  </entry>
+</feed>
+
