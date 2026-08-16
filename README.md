@@ -2,12 +2,6 @@
 
 Research Atlas is a conference-aware paper discovery and evaluation workspace. I made this in mind to retrieve academic papers, compare ranking strategies, and turn a field of your choice into an interactive map.
 
-The current backend retrieves papers from arXiv and OpenAlex, merges duplicate records, and runs a two-stage retrieve-and-rerank pipeline with persisted results.
-
-## Phase 1 domain
-
-The backend already defines provider-neutral paper and search models plus an immutable pipeline state machine. External providers, ranking models, and persistence can be added without changing the API's core vocabulary.
-
 ## Phase 3 ranking pipeline
 
 Every search queries the configured metadata providers concurrently, normalizes their records, and uses TF-IDF cosine similarity to produce a cheap candidate shortlist. When the ML extra is enabled, `cross-encoder/ms-marco-MiniLM-L6-v2` reranks those candidates by reading the topic and paper text together. The response reports provider counts, deduplication totals, latency, and fallback warnings.
