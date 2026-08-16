@@ -89,6 +89,55 @@ h1 {
 select, .searchOptions input { background: transparent; border: 0; color: var(--ink); outline: 0; }
 .searchOptions input { width: 4.6rem; }
 
+.searchOptions .automaticOption {
+  border-left: 1px solid var(--line);
+  margin-left: auto;
+  padding-left: 24px;
+}
+
+.automaticOption input {
+  accent-color: var(--accent);
+  height: 15px;
+  width: 15px;
+}
+
+.automaticOption select:disabled {
+  color: var(--faint);
+}
+
+.jobProgress {
+  background: rgba(17, 28, 25, 0.78);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin-top: 16px;
+  padding: 14px 16px;
+}
+
+.jobProgress > div:first-child {
+  align-items: center;
+  display: flex;
+  font-size: 0.78rem;
+  justify-content: space-between;
+}
+
+.jobProgress span { color: var(--muted); }
+.jobProgress strong { color: var(--accent); font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 0.7rem; }
+
+.progressTrack {
+  background: var(--line);
+  border-radius: 999px;
+  height: 3px;
+  margin-top: 12px;
+  overflow: hidden;
+}
+
+.progressTrack i {
+  background: var(--accent);
+  display: block;
+  height: 100%;
+  transition: width 300ms ease;
+}
+
 .pipeline { display: grid; gap: 12px; grid-template-columns: repeat(4, 1fr); list-style: none; margin: 48px 0 0; padding: 0; }
 .pipelineStage { align-items: flex-start; border-top: 1px solid var(--line); color: var(--muted); display: grid; gap: 10px; grid-template-columns: auto 1fr auto; padding-top: 14px; }
 .stageNumber, .score, .paperMeta, .usage { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
@@ -420,6 +469,7 @@ footer span { color: var(--ink); font-weight: 700; }
   .primaryButton { margin-top: 8px; }
   .searchOptions { align-items: stretch; flex-direction: column; grid-column: 1; gap: 12px; }
   .searchOptions label { justify-content: space-between; }
+  .searchOptions .automaticOption { border-left: 0; border-top: 1px solid var(--line); margin-left: 0; padding-left: 0; padding-top: 12px; }
   .pipeline, .themeGrid, .extractionBody { grid-template-columns: 1fr; }
   .diagnostics { gap: 16px; grid-template-columns: repeat(2, 1fr); }
   .paperCard { grid-template-columns: 30px 1fr; padding: 18px; }

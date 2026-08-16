@@ -148,6 +148,30 @@ export interface ResearchLandscape {
   };
 }
 
+export type PipelineJobStatus = "queued" | "running" | "succeeded" | "failed";
+export type PipelineJobStage = "discover" | "rerank" | "extract" | "map" | "complete";
+
+export interface PipelineJobRequest {
+  search: SearchRequest;
+  extraction_limit: number;
+}
+
+export interface PipelineJobSnapshot {
+  job_id: string;
+  status: PipelineJobStatus;
+  stage: PipelineJobStage;
+  percent: number;
+  message: string;
+  artifacts: {
+    search: SearchOutcome | null;
+    extractions: ExtractionBatch | null;
+    landscape: ResearchLandscape | null;
+  };
+  error: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface HealthResponse {
   status: "healthy";
   service: string;
@@ -214,4 +238,28 @@ export function buildLandscape(searchId: string): Promise<ResearchLandscape> {
 
 export function getLandscape(searchId: string): Promise<ResearchLandscape> {
   return requestJson<ResearchLandscape>(`/api/v1/searches/${searchId}/landscape`);
+}
+
+export function startPipelineJob(request: PipelineJobRequest): Promise<PipelineJobSnapshot> {
+  return requestJson<PipelineJobSnapshot>("/api/v1/pipeline-jobs", {
+    method: "POST",
+    body: JSON.stringify(request),
+  });
+}
+
+export function subscribePipelineJob(
+  jobId: string,
+  onSnapshot: (snapshot: PipelineJobSnapshot) => void,
+): () => void {
+  const events = new EventSource(`${apiBaseUrl}/api/v1/pipeline-jobs/${jobId}/events`);
+
+  events.addEventListener("snapshot", (event) => {
+    const snapshot = JSON.parse((event as MessageEvent<string>).data) as PipelineJobSnapshot;
+    onSnapshot(snapshot);
+    if (snapshot.status === "succeeded" || snapshot.status === "failed") {
+      events.close();
+    }
+  });
+
+  return () => events.close();
 }

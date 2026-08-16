@@ -78,6 +78,18 @@ For local frontend development, point the typed API client at FastAPI when it is
 export NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
+## Phase 7 live pipeline jobs
+
+The workspace can run discovery, reranking, extraction, and synthesis as one asynchronous job. Enable **Run all stages** before submitting a topic to receive live progress without holding the original HTTP request open. FastAPI returns a job immediately, runs each stage with a fresh database transaction, and publishes immutable snapshots over Server-Sent Events.
+
+```bash
+curl -X POST http://localhost:8000/api/v1/pipeline-jobs \
+  -H 'Content-Type: application/json' \
+  -d '{"search":{"topic":"adaptive retrieval","strategies":["keyword"]},"extraction_limit":5}'
+```
+
+Job state currently lives in the API process, which keeps the local architecture easy to study. The runner and coordinator are separated behind protocols so a later Redis-backed worker can add restart recovery and horizontal scaling without changing the browser contract.
+
 ## Database migrations
 
 PostgreSQL stores searches, canonical papers, provider identifiers, ranked results, structured extractions, and synthesized landscapes. Apply migrations after configuring `DATABASE_URL`:

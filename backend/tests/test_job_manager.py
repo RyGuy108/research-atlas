@@ -95,3 +95,19 @@ async def test_manager_rejects_unknown_job() -> None:
         await manager.get(PipelineJobSnapshot().job_id)
 
     await manager.close()
+
+
+@pytest.mark.anyio
+async def test_late_subscriber_receives_completed_snapshot_without_waiting() -> None:
+    manager = PipelineJobManager(SuccessfulRunner())
+    created = await manager.start(
+        PipelineJobRequest(search=SearchRequest(topic="adaptive retrieval"))
+    )
+    while not (await manager.get(created.job_id)).terminal:
+        await asyncio.sleep(0)
+
+    snapshots = [snapshot async for snapshot in manager.subscribe(created.job_id)]
+
+    assert len(snapshots) == 1
+    assert snapshots[0].status is PipelineJobStatus.SUCCEEDED
+    await manager.close()

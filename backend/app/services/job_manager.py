@@ -59,12 +59,17 @@ class PipelineJobManager:
 
     async def subscribe(self, job_id: UUID) -> AsyncIterator[PipelineJobSnapshot]:
         queue: asyncio.Queue[PipelineJobSnapshot] = asyncio.Queue()
-        snapshot = await self.get(job_id)
+        async with self._lock:
+            snapshot = self._jobs.get(job_id)
+            if snapshot is None:
+                raise PipelineJobNotFoundError(f"pipeline job {job_id} was not found")
+            if not snapshot.terminal:
+                self._subscribers[job_id].add(queue)
+
         if snapshot.terminal:
             yield snapshot
             return
 
-        self._subscribers[job_id].add(queue)
         try:
             yield snapshot
             while True:
