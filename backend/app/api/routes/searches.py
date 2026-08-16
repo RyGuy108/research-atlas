@@ -9,6 +9,7 @@ from app.api.dependencies import (
     get_landscape_service,
     get_search_service,
 )
+from app.api.security import require_write_access
 from app.domain.extraction import ExtractionBatch
 from app.domain.landscape import ResearchLandscape
 from app.domain.search import SearchRequest
@@ -28,7 +29,12 @@ class ExtractionBatchRequest(BaseModel):
     limit: int = Field(default=5, ge=1, le=25)
 
 
-@router.post("", response_model=SearchOutcome, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=SearchOutcome,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_write_access)],
+)
 async def create_search(
     request: SearchRequest,
     service: Annotated[SearchService, Depends(get_search_service)],
@@ -39,7 +45,11 @@ async def create_search(
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(error)) from error
 
 
-@router.post("/{search_id}/extractions", response_model=ExtractionBatch)
+@router.post(
+    "/{search_id}/extractions",
+    response_model=ExtractionBatch,
+    dependencies=[Depends(require_write_access)],
+)
 async def extract_search_papers(
     search_id: UUID,
     request: ExtractionBatchRequest,
@@ -51,7 +61,11 @@ async def extract_search_papers(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
 
 
-@router.post("/{search_id}/landscape", response_model=ResearchLandscape)
+@router.post(
+    "/{search_id}/landscape",
+    response_model=ResearchLandscape,
+    dependencies=[Depends(require_write_access)],
+)
 async def build_research_landscape(
     search_id: UUID,
     service: Annotated[LandscapeService, Depends(get_landscape_service)],

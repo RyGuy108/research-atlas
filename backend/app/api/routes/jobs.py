@@ -5,6 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
 
+from app.api.security import require_write_access
 from app.domain.job import PipelineJobRequest, PipelineJobSnapshot
 from app.services.job_manager import PipelineJobNotFoundError, PipelineJobs
 
@@ -15,7 +16,12 @@ def get_pipeline_job_manager(request: Request) -> PipelineJobs:
     return cast(PipelineJobs, request.app.state.pipeline_job_manager)
 
 
-@router.post("", response_model=PipelineJobSnapshot, status_code=status.HTTP_202_ACCEPTED)
+@router.post(
+    "",
+    response_model=PipelineJobSnapshot,
+    status_code=status.HTTP_202_ACCEPTED,
+    dependencies=[Depends(require_write_access)],
+)
 async def start_pipeline_job(
     request: PipelineJobRequest,
     manager: Annotated[PipelineJobs, Depends(get_pipeline_job_manager)],

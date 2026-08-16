@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
     openalex_api_key: SecretStr | None = None
     openai_api_key: SecretStr | None = None
+    write_api_key: SecretStr | None = None
     openai_model: str = "gpt-5-mini"
     openai_max_retries: int = Field(default=2, ge=0, le=5)
     llm_timeout_seconds: float = Field(default=60.0, gt=0, le=300)

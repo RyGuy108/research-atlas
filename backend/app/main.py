@@ -7,6 +7,7 @@ from redis.asyncio import Redis
 
 from app.api.router import api_router
 from app.core.config import Settings, get_settings
+from app.core.observability import RequestObservabilityMiddleware, configure_logging
 from app.services.job_manager import PipelineJobManager, PipelineJobs
 from app.services.pipeline_runner import AtlasPipelineRunner
 from app.services.redis_job_manager import RedisPipelineJobs
@@ -15,6 +16,7 @@ from app.services.redis_job_manager import RedisPipelineJobs
 def create_app(settings: Settings | None = None) -> FastAPI:
     """Assemble the API in one place so tests and future workers share the same setup."""
     resolved_settings = settings or get_settings()
+    configure_logging()
     job_manager: PipelineJobs
     if resolved_settings.redis_url:
         job_manager = RedisPipelineJobs(
@@ -38,6 +40,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     application.state.settings = resolved_settings
     application.state.pipeline_job_manager = job_manager
+    application.add_middleware(RequestObservabilityMiddleware)
     application.add_middleware(
         CORSMiddleware,
         allow_origins=resolved_settings.cors_origins,
