@@ -1,38 +1,17 @@
-const pipeline = ["Discover", "Rerank", "Extract", "Map"];
+import { AtlasWorkspace } from "@/components/atlas-workspace";
 
 export default function Home() {
   return (
     <main>
       <nav className="nav">
-        <span className="brand">Research Atlas</span>
-        <span className="badge">Foundation preview</span>
-      </nav>
-
-      <section className="hero">
-        <p className="eyebrow">Conference-aware literature discovery</p>
-        <h1>Turn a research topic into an evidence-backed reading map.</h1>
-        <p className="lede">
-          Search across machine-learning venues, compare retrieval strategies, and trace every
-          synthesized claim back to its source.
-        </p>
-
-        <div className="searchShell" aria-label="Search preview">
-          <span>Adaptive retrieval for small language models</span>
-          <button type="button" disabled>
-            Build atlas
-          </button>
+        <a className="brand" href="#top" aria-label="Research Atlas home">Research Atlas</a>
+        <div className="navMeta">
+          <span>Evidence over hype</span>
+          <a href="https://github.com/RyGuy108/research-atlas" target="_blank" rel="noreferrer">Source <span aria-hidden="true">↗</span></a>
         </div>
-
-        <ol className="pipeline" aria-label="Research pipeline">
-          {pipeline.map((stage, index) => (
-            <li key={stage}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              {stage}
-            </li>
-          ))}
-        </ol>
-      </section>
+      </nav>
+      <div id="top"><AtlasWorkspace /></div>
+      <footer><span>Research Atlas</span><p>Built to make literature review methods inspectable.</p></footer>
     </main>
   );
 }
-
