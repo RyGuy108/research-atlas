@@ -66,6 +66,18 @@ curl http://localhost:8000/api/v1/searches/SEARCH_ID/landscape
 
 The semantic validator rejects unknown paper IDs, missing or duplicate cluster narratives, cross-cluster evidence mistakes, and self-referential relationships. The persisted response contains the complete graph and synthesis metadata needed by a future interactive reading map.
 
+## Phase 6 interactive workspace
+
+The Next.js application now drives the complete persisted workflow. A researcher can configure a topic, date range, candidate pool, and ranking strategy; inspect provider and ranking diagnostics; then explicitly opt into LLM extraction and landscape synthesis. Pipeline failures remain attached to the stage that produced them, and token usage stays visible.
+
+The final landscape combines an interactive semantic graph with paper-level evidence, cluster narratives, cross-paper relationships, tensions, and open questions. Select any numbered graph node to trace it back to the structured problem and method extracted from that paper.
+
+For local frontend development, point the typed API client at FastAPI when it is not running on the default port:
+
+```bash
+export NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
 ## Database migrations
 
 PostgreSQL stores searches, canonical papers, provider identifiers, ranked results, structured extractions, and synthesized landscapes. Apply migrations after configuring `DATABASE_URL`:

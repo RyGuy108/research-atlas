@@ -108,9 +108,9 @@ select, .searchOptions input { background: transparent; border: 0; color: var(--
 .notice--error { background: rgba(255, 111, 94, 0.08); border-color: rgba(255, 156, 140, 0.45); color: #ffc5bb; }
 .notice--warning { background: rgba(242, 198, 117, 0.07); border-color: rgba(242, 198, 117, 0.35); color: #f8db9f; margin: 20px 0; }
 .workspace { padding: 0 32px 96px; }
-.resultsSection, .landscapeSummary { border-top: 1px solid var(--line); padding: 76px 0; }
+.resultsSection, .landscapeSection { border-top: 1px solid var(--line); padding: 76px 0; }
 .sectionHeading { align-items: end; display: flex; gap: 48px; justify-content: space-between; margin-bottom: 34px; }
-.sectionHeading h2, .actionPanel h2, .landscapeSummary > h2 { font-size: clamp(2rem, 4vw, 3.3rem); letter-spacing: -0.045em; line-height: 1.06; margin: 0; }
+.sectionHeading h2, .actionPanel h2, .landscapeIntro h2 { font-size: clamp(2rem, 4vw, 3.3rem); letter-spacing: -0.045em; line-height: 1.06; margin: 0; }
 
 .diagnostics { display: grid; flex-shrink: 0; gap: 22px; grid-template-columns: repeat(4, auto); margin: 0; }
 .diagnostics dt { color: var(--faint); font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; }
@@ -173,12 +173,230 @@ select, .searchOptions input { background: transparent; border: 0; color: var(--
 blockquote { border-left: 1px solid var(--line); color: var(--muted); font-size: 0.76rem; line-height: 1.55; margin: 14px 0 0; padding-left: 14px; }
 blockquote cite { color: var(--faint); display: block; font-style: normal; margin-top: 7px; text-transform: uppercase; }
 
-.landscapeSummary > h2 { max-width: 980px; }
 .themeGrid { display: grid; gap: 12px; grid-template-columns: repeat(3, 1fr); margin-top: 38px; }
 .themeGrid article { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 26px; }
 .themeGrid article > span { color: var(--accent); font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 0.65rem; text-transform: uppercase; }
 .themeGrid h3 { font-size: 1.25rem; margin: 24px 0 12px; }
 .themeGrid p { color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
+
+.landscapeIntro {
+  align-items: end;
+  display: grid;
+  gap: 60px;
+  grid-template-columns: 0.85fr 1fr;
+  margin-bottom: 42px;
+}
+
+.landscapeIntro > p {
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.mapLayout {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1.75fr) minmax(280px, 0.65fr);
+}
+
+.mapPanel,
+.paperInspector {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.mapPanel {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.mapHeader {
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  color: var(--faint);
+  display: flex;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.65rem;
+  justify-content: space-between;
+  letter-spacing: 0.05em;
+  padding: 15px 18px;
+  text-transform: uppercase;
+}
+
+.mapCanvas {
+  background:
+    linear-gradient(rgba(124, 227, 180, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 227, 180, 0.035) 1px, transparent 1px),
+    radial-gradient(circle at 50% 50%, rgba(124, 227, 180, 0.06), transparent 55%);
+  background-size: 42px 42px, 42px 42px, auto;
+  min-height: 520px;
+  position: relative;
+}
+
+.mapEdges {
+  height: 100%;
+  inset: 0;
+  overflow: visible;
+  position: absolute;
+  width: 100%;
+}
+
+.mapEdges line {
+  stroke: #a6c7b9;
+}
+
+.mapNode {
+  align-items: center;
+  background: color-mix(in srgb, var(--cluster-color), #08100e 78%);
+  border: 1px solid var(--cluster-color);
+  border-radius: 50%;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--cluster-color), transparent 88%);
+  color: var(--ink);
+  display: flex;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.65rem;
+  height: 34px;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  transition: box-shadow 160ms ease, transform 160ms ease;
+  width: 34px;
+  z-index: 2;
+}
+
+.mapNode:hover,
+.mapNode[aria-pressed="true"] {
+  box-shadow: 0 0 0 7px color-mix(in srgb, var(--cluster-color), transparent 72%);
+  transform: translate(-50%, -50%) scale(1.16);
+  z-index: 3;
+}
+
+.mapLegend {
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 11px 20px;
+  padding: 15px 18px;
+}
+
+.mapLegend span {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  font-size: 0.68rem;
+  gap: 7px;
+}
+
+.mapLegend i {
+  border-radius: 50%;
+  height: 7px;
+  width: 7px;
+}
+
+.paperInspector {
+  padding: 26px;
+}
+
+.inspectorLabel,
+.inspectorRank,
+.inspectorClaim > span,
+.modelFootnote {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  text-transform: uppercase;
+}
+
+.inspectorLabel {
+  color: var(--faint);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  margin: 0 0 28px;
+}
+
+.inspectorRank {
+  color: var(--accent);
+  font-size: 0.67rem;
+}
+
+.paperInspector h3 {
+  font-size: 1.18rem;
+  line-height: 1.3;
+  margin: 10px 0 22px;
+}
+
+.paperInspector dl {
+  border-bottom: 1px solid var(--line);
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+  margin: 0 0 24px;
+  padding: 16px 0;
+}
+
+.paperInspector dl div { min-width: 0; }
+.paperInspector dt { color: var(--faint); font-size: 0.64rem; text-transform: uppercase; }
+.paperInspector dd { font-size: 0.74rem; margin: 5px 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.inspectorClaim { margin-top: 22px; }
+.inspectorClaim > span { color: var(--accent); font-size: 0.62rem; letter-spacing: 0.08em; }
+.inspectorClaim p { color: var(--muted); font-size: 0.78rem; line-height: 1.55; margin: 8px 0 0; }
+
+.synthesisGrid {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 68px;
+  grid-template-columns: repeat(2, 1fr);
+  margin-top: 76px;
+  padding-top: 76px;
+}
+
+.synthesisGrid > section > h3,
+.tensions > h3 {
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  letter-spacing: -0.04em;
+  margin: 0 0 28px;
+}
+
+.insightList {
+  display: grid;
+  gap: 10px;
+}
+
+.insightList article,
+.tensions article {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  padding: 22px;
+}
+
+.relationshipKind,
+.questionNumber {
+  color: var(--accent);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.relationshipKind--contrasts { color: var(--warning); }
+.insightList h4 { font-size: 1rem; line-height: 1.4; margin: 10px 0; }
+.insightList p, .tensions p { color: var(--muted); font-size: 0.82rem; line-height: 1.55; }
+.insightList small, .tensions small { color: var(--faint); font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 0.62rem; }
+.emptyInsight { color: var(--faint); }
+
+.tensions {
+  background: rgba(242, 198, 117, 0.045);
+  border: 1px solid rgba(242, 198, 117, 0.22);
+  border-radius: 14px;
+  margin-top: 76px;
+  padding: clamp(26px, 5vw, 48px);
+}
+
+.tensions > div { display: grid; gap: 10px; grid-template-columns: repeat(2, 1fr); }
+.modelFootnote { color: var(--faint); font-size: 0.6rem; letter-spacing: 0.04em; margin: 32px 0 0; text-align: right; }
 
 footer { align-items: center; border-top: 1px solid var(--line); color: var(--faint); display: flex; font-size: 0.78rem; justify-content: space-between; margin: 0 auto; max-width: 1240px; padding: 32px; }
 footer span { color: var(--ink); font-weight: 700; }
@@ -189,6 +407,9 @@ footer span { color: var(--ink); font-weight: 700; }
   .sectionHeading { align-items: start; flex-direction: column; }
   .diagnostics { width: 100%; }
   .actionPanel { grid-template-columns: 1fr; }
+  .landscapeIntro, .mapLayout, .synthesisGrid { grid-template-columns: 1fr; }
+  .landscapeIntro { gap: 24px; }
+  .paperInspector { min-height: 0; }
 }
 
 @media (max-width: 600px) {
@@ -206,6 +427,9 @@ footer span { color: var(--ink); font-weight: 700; }
   .extractionCard summary { grid-template-columns: 30px 1fr; padding: 18px; }
   .expandLabel { display: none; }
   .extractionBody { padding: 24px 48px; }
+  .mapCanvas { min-height: 390px; }
+  .mapHeader { align-items: start; flex-direction: column; gap: 6px; }
+  .tensions > div { grid-template-columns: 1fr; }
   footer { align-items: start; flex-direction: column; }
 }
 

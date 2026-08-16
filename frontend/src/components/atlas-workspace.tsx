@@ -5,13 +5,14 @@ import { FormEvent, useMemo, useState } from "react";
 import { ExtractionNotes } from "@/components/extraction-notes";
 import { PaperResults } from "@/components/paper-results";
 import { PipelineProgress, type PipelineStage } from "@/components/pipeline-progress";
+import { ResearchLandscape } from "@/components/research-landscape";
 import {
   buildLandscape,
   createSearch,
   extractPapers,
   type ExtractionBatch,
   type RankingStrategy,
-  type ResearchLandscape,
+  type ResearchLandscape as ResearchLandscapeData,
   type SearchOutcome,
 } from "@/lib/api";
 
@@ -30,7 +31,7 @@ export function AtlasWorkspace() {
   const [extractionLimit, setExtractionLimit] = useState(5);
   const [search, setSearch] = useState<SearchOutcome | null>(null);
   const [extractions, setExtractions] = useState<ExtractionBatch | null>(null);
-  const [landscape, setLandscape] = useState<ResearchLandscape | null>(null);
+  const [landscape, setLandscape] = useState<ResearchLandscapeData | null>(null);
   const [running, setRunning] = useState<RunningStage>(null);
   const [failedStage, setFailedStage] = useState<RunningStage>(null);
   const [error, setError] = useState<string | null>(null);
@@ -213,20 +214,8 @@ export function AtlasWorkspace() {
             </section>
           )}
 
-          {landscape && (
-            <section className="landscapeSummary" aria-labelledby="landscape-heading">
-              <p className="eyebrow">Research landscape</p>
-              <h2 id="landscape-heading">{landscape.synthesis_run.synthesis.overview}</h2>
-              <div className="themeGrid">
-                {landscape.synthesis_run.synthesis.clusters.map((cluster) => (
-                  <article key={cluster.cluster_id}>
-                    <span>Theme {String(cluster.cluster_id + 1).padStart(2, "0")}</span>
-                    <h3>{cluster.name}</h3>
-                    <p>{cluster.summary}</p>
-                  </article>
-                ))}
-              </div>
-            </section>
+          {landscape && extractions && (
+            <ResearchLandscape landscape={landscape} extractions={extractions} />
           )}
         </div>
       )}
