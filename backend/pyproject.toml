@@ -25,6 +25,9 @@ dev = [
   "pytest>=9.0,<10.0",
   "ruff>=0.15,<1.0",
 ]
+ml = [
+  "sentence-transformers>=5.2,<6.0",
+]
 
 [tool.setuptools.packages.find]
 include = ["app*"]
@@ -45,5 +48,5 @@ strict = true
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["sklearn.*"]
+module = ["sentence_transformers", "sentence_transformers.*", "sklearn.*"]
 ignore_missing_imports = true
