@@ -1,0 +1,17 @@
+.DS_Store
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.py[cod]
+*.egg-info/
+
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+
+.coverage
+htmlcov/
