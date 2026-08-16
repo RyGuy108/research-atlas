@@ -1,6 +1,6 @@
 # Research Atlas
 
-Research Atlas is a conference-aware paper discovery and evaluation workspace. It will retrieve academic papers, compare ranking strategies, extract evidence-backed notes, and turn a field into an interactive research map.
+Research Atlas is a conference-aware paper discovery and evaluation workspace. I made this in mind to retrieve academic papers, compare ranking strategies, and turn a field of your choice into an interactive map.
 
 This first phase establishes the FastAPI and Next.js applications that later pipeline work will build on.
 
